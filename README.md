@@ -11,7 +11,8 @@ In the project directory, you can run:
 - **`npm start`** – Run the frontend in development mode at [http://localhost:3000](http://localhost:3000).  
 - **`npm run build`** – Build the frontend for production.
 
----
+Runs the app in the development mode.\
+Open [http://localhost:5000](http://localhost:5000) to view it in your browser.
 
 ## Project Structure
 
@@ -49,9 +50,4 @@ The backend and frontend have been hardened to protect against common web and ba
 
 ## Security Highlights
 
-- **SQL Injection:** All database queries use **parameterized queries via Mongoose**.  
-- **Cross-Site Scripting (XSS):** User input is sanitized with **xss()** library.  
-- **Man-in-the-Middle (MITM):** Enforced **HTTPS and HSTS**.  
-- **Session Hijacking:** JWT-based authentication; no session IDs in cookies.  
-- **DDoS & Brute Force:** Rate limiting on critical routes.  
-- **Clickjacking:** `X-Frame-Options: DENY` and `CSP frame-ancestors 'none'`.
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
