@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\banking-api",
+    "\\banking-api\\middleware",
+    "\\banking-api\\models",
+    "\\banking-api\\routes"
+  ],
+  "SelectedNode": "\\banking-api\\server.js",
+  "PreviewInSolutionExplorer": false
+}
