@@ -68,3 +68,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+Input Whitelisting with Regular Expressions:
+I made sure that every input field in the registration flow is strictly validated using server-side regular expressions. This means that before any data reaches the database, it’s checked against a pattern that defines exactly what is allowed.
+
+For example, I restricted the full name field to only allow letters, spaces, hyphens, and apostrophes — no numbers or symbols. The ID number must be exactly 13 digits, and the account number must be exactly 12 digits. I also applied a secure pattern to the password field, allowing only specific characters and enforcing a length between 8 and 32 characters.
+
+This validation happens on the backend, not just the frontend, so even if someone tries to bypass the browser, the server will reject anything that doesn’t match the expected format. If the input is invalid, the server responds with a clear error message in JSON format. This protects the system from malformed data, injection attempts, and accidental misuse.
+
+SSL Enforcement for Secure Traffic:
+To protect user data during transmission, I enforced SSL (HTTPS) in production. This means that if someone tries to access the site using an insecure HTTP connection, they are automatically redirected to the secure HTTPS version.
+
+I implemented this by checking the protocol of incoming requests. If the request is not using HTTPS and the app is running in production mode, the server redirects the user to the secure version of the same URL. This ensures that all sensitive information — like passwords and personal details — is encrypted while traveling between the client and server.
+
+SSL enforcement is especially important when deploying to cloud platforms or reverse proxies, where users might unknowingly access the site over HTTP. By redirecting them automatically, I make sure the system always uses secure channels.
