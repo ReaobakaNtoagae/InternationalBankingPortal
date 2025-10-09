@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# International Payments Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a **React frontend** with a **Node.js / Express backend** for secure customer international payments.
+
+---
 
 ## Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+- **`npm start`** – Run the frontend in development mode at [http://localhost:3000](http://localhost:3000).  
+- **`npm run build`** – Build the frontend for production.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Project Structure
 
-### `npm test`
+/banking-api → Backend API (Node.js + Express + MongoDB)
+/models → Mongoose models (User.js, Payment.js)
+/routes → API routes (authRoutes.js, paymentRoutes.js)
+/middleware → Middleware for authentication and security
+/public → Static frontend files
+/src → React frontend components
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Ade-Eza: Protect Against All Attacks
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The backend and frontend have been hardened to protect against common web and banking threats:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Page/File                     | Threats Protected                     | How It’s Protected                                                                                       |
+|-------------------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `server.js`                   | MITM, Clickjacking, DDoS, XSS        | Helmet headers, HSTS, X-Frame-Options, CSP, rate limiting, CORS whitelist, XSS sanitization, compression |
+| `authMiddleware.js`           | Session hijacking, invalid access    | Validates JWT tokens, excludes passwords from requests, ensures only authenticated users can access protected routes |
+| `authRoutes.js`               | SQL injection, XSS, brute-force login | Uses hashed & salted passwords, parameterized queries, input sanitization, login rate limiting, strict field validation (RegEx) |
+| `paymentRoutes.js`            | SQL injection, XSS, DDoS, data tampering | Parameterized Mongoose queries, input sanitization with xss(), strict whitelist validation, rate limiting, numeric validation |
+| MongoDB models (`User.js`, `Payment.js`) | Data integrity                      | Enforces schema types and required fields, limits DB access to necessary permissions only               |
 
-### `npm run eject`
+### Additional Measures
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Passwords are **hashed and salted** using bcrypt.  
+- All traffic is served over **HTTPS with HSTS**.  
+- **JWT tokens** secure sessions; tokens expire daily.  
+- Input fields are validated against **whitelist patterns** to block malicious data.  
+- **Rate limiting** reduces the risk of DDoS attacks and brute-force attempts.  
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Security Highlights
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **SQL Injection:** All database queries use **parameterized queries via Mongoose**.  
+- **Cross-Site Scripting (XSS):** User input is sanitized with **xss()** library.  
+- **Man-in-the-Middle (MITM):** Enforced **HTTPS and HSTS**.  
+- **Session Hijacking:** JWT-based authentication; no session IDs in cookies.  
+- **DDoS & Brute Force:** Rate limiting on critical routes.  
+- **Clickjacking:** `X-Frame-Options: DENY` and `CSP frame-ancestors 'none'`.
