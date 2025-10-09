@@ -1,53 +1,108 @@
-# International Payments Portal
+International Payments Portal
 
-This project is a **React frontend** with a **Node.js / Express backend** for secure customer international payments.
+This project is a React frontend with a Node.js / Express backend for secure international payments. Users can register, log in, and perform transactions while the app enforces strong security measures.
 
----
+Project Overview
 
-## Available Scripts
+Frontend: React components handle registration, login, and transaction forms.
 
-In the project directory, you can run:
+Backend: Node.js + Express API with MongoDB database, handling authentication, payment processing, and input validation.
 
-- **`npm start`** – Run the frontend in development mode at [http://localhost:3000](http://localhost:3000).  
-- **`npm run build`** – Build the frontend for production.
+Security: Strong measures including input validation, hashed passwords, JWT authentication, rate limiting, and HTTPS enforcement.
 
-Runs the app in the development mode.\
-Open [http://localhost:5000](http://localhost:5000) to view it in your browser.
+Project Structure
+/banking-api         -> Backend API (Node.js + Express + MongoDB)
+/models              -> Mongoose models (User.js, Payment.js)
+/routes              -> API routes (authRoutes.js, paymentRoutes.js)
+/middleware          -> Middleware for authentication & security
+/src                  -> React frontend components
+/public               -> Static frontend files
 
-## Project Structure
+How the App Works
 
-/banking-api → Backend API (Node.js + Express + MongoDB)
-/models → Mongoose models (User.js, Payment.js)
-/routes → API routes (authRoutes.js, paymentRoutes.js)
-/middleware → Middleware for authentication and security
-/public → Static frontend files
-/src → React frontend components
+User Registration:
+
+Users fill out a form with full name, ID number, account number, and password.
+
+The frontend validates inputs using whitelist RegEx patterns.
+
+Backend re-validates the input before saving.
+
+Passwords are hashed and salted using bcrypt.
+
+A JWT token is issued for the user session.
+
+Login:
+
+Users submit account number and password.
+
+Backend verifies the password using bcrypt.
+
+JWT token is issued on successful login for authenticated routes.
+
+Payments:
+
+Authenticated users can create international payments.
+
+Backend validates all inputs (amounts, recipient account numbers) using strict patterns and type checks.
+
+Payment operations are protected against SQL injection, XSS, and DDoS attacks.
+
+Security Measures & Checklist
+Security Point	Implementation
+Password security (hashing & salting)	Passwords hashed with bcrypt before storage. Login compares hashes.
+Input whitelist (RegEx validation)	Frontend & backend validate full name, ID number, account number, password, and payment inputs using strict RegEx patterns.
+Traffic over SSL	Enforced in production via redirect to HTTPS in server.js using x-forwarded-proto header. Tested in deployed environment.
+Protection against common attacks	- Helmet headers for CSP, HSTS, X-Frame-Options, XSS protection
+- Rate limiting to prevent brute-force / DDoS
+- CORS whitelist to control allowed origins
+- JWT authentication for protected routes
+- Error handling prevents sensitive data leaks
+- Sanitization & type validation for all user inputs
+Setup Instructions (Local Dev)
+
+Clone the repository:
+
+git clone <repo-url>
+cd InternationalBankingPortal
 
 
----
+Install dependencies:
 
-## Ade-Eza: Protect Against All Attacks
+npm install
+cd banking-api
+npm install
 
-The backend and frontend have been hardened to protect against common web and banking threats:
 
-| Page/File                     | Threats Protected                     | How It’s Protected                                                                                       |
-|-------------------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `server.js`                   | MITM, Clickjacking, DDoS, XSS        | Helmet headers, HSTS, X-Frame-Options, CSP, rate limiting, CORS whitelist, XSS sanitization, compression |
-| `authMiddleware.js`           | Session hijacking, invalid access    | Validates JWT tokens, excludes passwords from requests, ensures only authenticated users can access protected routes |
-| `authRoutes.js`               | SQL injection, XSS, brute-force login | Uses hashed & salted passwords, parameterized queries, input sanitization, login rate limiting, strict field validation (RegEx) |
-| `paymentRoutes.js`            | SQL injection, XSS, DDoS, data tampering | Parameterized Mongoose queries, input sanitization with xss(), strict whitelist validation, rate limiting, numeric validation |
-| MongoDB models (`User.js`, `Payment.js`) | Data integrity                      | Enforces schema types and required fields, limits DB access to necessary permissions only               |
+Create a .env file with the following:
 
-### Additional Measures
+MONGO_URI=<your-mongo-uri>
+JWT_SECRET=<your-secret>
+NODE_ENV=development
+PORT=5000
 
-- Passwords are **hashed and salted** using bcrypt.  
-- All traffic is served over **HTTPS with HSTS**.  
-- **JWT tokens** secure sessions; tokens expire daily.  
-- Input fields are validated against **whitelist patterns** to block malicious data.  
-- **Rate limiting** reduces the risk of DDoS attacks and brute-force attempts.  
 
----
+Run backend server:
 
-## Security Highlights
+node server.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+Run frontend:
+
+npm start
+
+
+Visit http://localhost:3000
+ to test.
+
+Security Highlights
+
+JWT tokens secure sessions; expire daily.
+
+Rate limiting reduces DDoS & brute-force risks.
+
+Helmet sets secure HTTP headers (CSP, X-Frame-Options, HSTS).
+
+Input validation blocks malicious data using strict whitelist patterns.
+
+Error handling prevents sensitive stack traces from leaking.
