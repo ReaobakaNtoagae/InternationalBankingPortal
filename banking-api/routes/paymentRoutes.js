@@ -1,11 +1,12 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit"); // 🛡️ Prevent DDoS and abuse
 const xss = require("xss"); // 🛡️ Sanitize all inputs to prevent XSS
-const validator = require("validator"); // 🛡️ Validate numeric and text fields
+const validator = require("validator");
 const router = express.Router();
 const Payment = require("../models/Payment");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
+
 
 // 🛡️ Protection: Global rate limiter for all payment endpoints
 const paymentLimiter = rateLimit({
@@ -110,7 +111,7 @@ router.post("/transfer", authMiddleware, paymentLimiter, async (req, res) => {
             fields[key] = xss(fields[key].trim());
         }
 
-        // 🛡️ Whitelist input formats (RegEx)
+        
         const accPattern = /^[0-9]{10,12}$/;
         const namePattern = /^[a-zA-Z\s]+$/;
         const swiftPattern = /^[A-Z0-9]{8,11}$/;

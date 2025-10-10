@@ -1,30 +1,48 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
 
 export default function Home() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
+  const token = localStorage.getItem("token");
   const [payments, setPayments] = useState([]);
   const [stats, setStats] = useState({ totalSent: 0, totalReceived: 0, balance: 0 });
 
   useEffect(() => {
+    if (!user?._id) {
+      navigate("/login");
+      return;
+    }
+
     const fetchPayments = async () => {
-      if (!user?.accountNumber) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/payments/${user.accountNumber}`);
+        const res = await fetch(`http://localhost:5000/api/payments/${user.accountNumber}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
-        if (res.ok) {
-          setPayments(data);
-          let sent = 0,
-            received = 0;
-          data.forEach((p) => (p.type === "transfer" ? (sent += p.amount) : (received += p.amount)));
-          setStats({ totalSent: sent, totalReceived: received, balance: received - sent });
+
+        if (!res.ok) {
+          console.error("Fetch payments error:", data.error);
+          return;
         }
+
+        setPayments(data);
+
+        let sent = 0,
+          received = 0;
+        data.forEach((p) => (p.type === "transfer" ? (sent += p.amount) : (received += p.amount)));
+        setStats({ totalSent: sent, totalReceived: received, balance: received - sent });
       } catch (err) {
         console.error("Fetch payments error:", err);
       }
     };
+
     fetchPayments();
-  }, [user]);
+  }, [user, token, navigate]);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -35,7 +53,6 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* Top Bar */}
       <header className={styles.header}>
         <div className={styles.profile}>
           <img
@@ -44,7 +61,7 @@ export default function Home() {
           />
           <div>
             <h1>{greeting()}</h1>
-            <p>{user ? user.fullName : "Guest"}</p>
+            <p>{user?.fullName || "Guest"}</p>
           </div>
         </div>
         <div className={styles.balanceBox}>
@@ -53,7 +70,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Stats Row */}
       <section className={styles.stats}>
         <div className={`${styles.statCard} ${styles.sent}`}>
           <h3>Total Sent</h3>
@@ -69,7 +85,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Transaction Feed */}
       <section className={styles.transactions}>
         <h2>Recent Transactions</h2>
         {payments.length === 0 ? (
@@ -79,28 +94,16 @@ export default function Home() {
             {payments.map((p, i) => (
               <li key={p._id} className={styles.transaction} style={{ animationDelay: `${i * 0.1}s` }}>
                 <div className={styles.left}>
-                  <div
-                    className={`${styles.icon} ${
-                      p.type === "transfer" ? styles.iconSent : styles.iconReceived
-                    }`}
-                  >
+                  <div className={`${styles.icon} ${p.type === "transfer" ? styles.iconSent : styles.iconReceived}`}>
                     {p.type === "transfer" ? "📤" : "📥"}
                   </div>
                   <div>
                     <h4>{p.type === "transfer" ? "Transfer Sent" : "Payment Received"}</h4>
-                    <p>
-                      {p.type === "transfer"
-                        ? `To: ${p.beneficiaryName}`
-                        : `From: ${p.senderName || "Unknown"}`}
-                    </p>
+                    <p>{p.type === "transfer" ? `To: ${p.beneficiaryName}` : `From: ${p.senderName || "Unknown"}`}</p>
                   </div>
                 </div>
                 <div className={styles.right}>
-                  <span
-                    className={
-                      p.type === "transfer" ? styles.amountSent : styles.amountReceived
-                    }
-                  >
+                  <span className={p.type === "transfer" ? styles.amountSent : styles.amountReceived}>
                     {p.type === "transfer" ? "-" : "+"}${p.amount.toLocaleString()}
                   </span>
                   <small>{new Date(p.createdAt).toLocaleDateString()}</small>

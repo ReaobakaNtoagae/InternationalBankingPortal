@@ -5,12 +5,14 @@ const rateLimit = require("express-rate-limit"); // 🛡️ Protection: Throttle
 const xss = require("xss"); // 🛡️ Protection: Sanitizes input against XSS payloads
 const User = require("../models/User");
 require("dotenv").config();
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
   console.log("🔐 Generating JWT token...");
+  console.log("JWT_SECRET,", process.env.JWT_SECRET);
   if (!secret) {
     throw new Error("JWT_SECRET is not defined in environment variables.");
   }

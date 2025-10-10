@@ -9,6 +9,9 @@ export default function CustomerPortal() {
   // Logged-in user
   const [user, setUser] = useState(null);
 
+  // Token for authenticated requests
+  const [token, setToken] = useState(null);
+
   // Toast notifications
   const [toast, setToast] = useState(null);
   const showToast = (message, type = "success") => setToast({ message, type });
@@ -35,14 +38,17 @@ export default function CustomerPortal() {
   // Payment ID returned from backend
   const [paymentId, setPaymentId] = useState(null);
 
-  // Fetch logged-in user from localStorage
+  // Fetch logged-in user and token from localStorage
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (!loggedInUser?._id) {
+    const storedToken = localStorage.getItem("token");
+
+    if (!loggedInUser?._id || !storedToken) {
       showToast("User not logged in", "error");
       navigate("/login");
     } else {
       setUser(loggedInUser);
+      setToken(storedToken);
     }
   }, [navigate]);
 
@@ -68,12 +74,15 @@ export default function CustomerPortal() {
     try {
       const response = await fetch("http://localhost:5000/api/payments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
           accountNumber: user.accountNumber,
           amount,
           currency,
-          provider 
+          provider,
         }),
       });
 
@@ -88,7 +97,7 @@ export default function CustomerPortal() {
       showToast("Payment initialized! Proceed to beneficiary.", "success");
       setStep(2);
     } catch (err) {
-      console.error(err);
+      console.error("Payment Error:", err);
       showToast("Server error. Please try again later.", "error");
     }
   };
@@ -106,9 +115,12 @@ export default function CustomerPortal() {
     try {
       const response = await fetch("http://localhost:5000/api/payments/transfer", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          accountNumber: user.accountNumber, // sender account
+          accountNumber: user.accountNumber, 
           beneficiaryName,
           accountNumberBeneficiary: accountNumber,
           bankName,
@@ -130,16 +142,22 @@ export default function CustomerPortal() {
       showToast("Transfer completed successfully!", "success");
       setTimeout(() => navigate("/home"), 1500);
     } catch (err) {
-      console.error(err);
+      console.error("Transfer Error:", err);
       showToast("Server error. Please try again later.", "error");
     }
   };
 
   return (
     <div className={styles.container}>
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      
-      {user && <p>Welcome, {user.fullName} | Account: {user.accountNumber}</p>}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
+      {user && (
+        <p>
+          Welcome, {user.fullName} | Account: {user.accountNumber}
+        </p>
+      )}
 
       {step === 1 && (
         <>
@@ -153,7 +171,12 @@ export default function CustomerPortal() {
               onChange={handlePaymentChange}
               required
             />
-            <select name="currency" value={paymentData.currency} onChange={handlePaymentChange} required>
+            <select
+              name="currency"
+              value={paymentData.currency}
+              onChange={handlePaymentChange}
+              required
+            >
               <option value="">Select Currency</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -164,7 +187,12 @@ export default function CustomerPortal() {
               <option value="AUD">AUD</option>
               <option value="ZAR">ZAR</option>
             </select>
-            <select name="provider" value={paymentData.provider} onChange={handlePaymentChange} required>
+            <select
+              name="provider"
+              value={paymentData.provider}
+              onChange={handlePaymentChange}
+              required
+            >
               <option value="">Select Provider</option>
               <option value="PayPal">PayPal</option>
               <option value="Wise">Wise</option>
@@ -172,7 +200,9 @@ export default function CustomerPortal() {
               <option value="SWIFT">SWIFT</option>
               <option value="Bank Transfer">Bank Transfer</option>
             </select>
-            <button type="submit" className={styles.button}>Next: Beneficiary</button>
+            <button type="submit" className={styles.button}>
+              Next: Beneficiary
+            </button>
           </form>
         </>
       )}
@@ -220,7 +250,9 @@ export default function CustomerPortal() {
               value={beneficiaryData.reference}
               onChange={handleBeneficiaryChange}
             />
-            <button type="submit" className={styles.button}>Submit Transfer</button>
+            <button type="submit" className={styles.button}>
+              Submit Transfer
+            </button>
           </form>
         </>
       )}
