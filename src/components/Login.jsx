@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Toast from "./Toast";
 import styles from "./Login.module.css";
 
@@ -13,15 +13,12 @@ export default function Login() {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Toast helper
   const showToast = (message, type = "success") => setToast({ message, type });
 
-  // Input handler
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
-  // Login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { fullName, accountNumber, password } = loginData;
@@ -51,12 +48,11 @@ export default function Login() {
         return;
       }
 
-      // ✅ Store user details with correct ID key (_id)
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "loggedInUser",
         JSON.stringify({
-          _id: data.user.id, // 👈 important change (CustomerPortal expects _id)
+          _id: data.user.id,
           fullName: data.user.fullName,
           accountNumber: data.user.accountNumber,
         })
@@ -64,7 +60,6 @@ export default function Login() {
 
       showToast(`Welcome back, ${data.user.fullName}!`, "success");
 
-     
       setTimeout(() => navigate("/customer-portal"), 1000);
     } catch (err) {
       console.error("Login error:", err);
@@ -83,7 +78,6 @@ export default function Login() {
           onClose={() => setToast(null)}
         />
       )}
-
       <h2 className={styles.title}>Login</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
         <input
@@ -114,13 +108,6 @@ export default function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-
-      <p style={{ marginTop: "20px" }}>
-        Don’t have an account yet?{" "}
-        <Link to="/" style={{ color: "#ffcb05", fontWeight: "600" }}>
-          Register
-        </Link>
-      </p>
     </div>
   );
 }
