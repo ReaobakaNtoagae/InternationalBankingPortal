@@ -3,30 +3,20 @@ import { useNavigate } from "react-router-dom";
 import Toast from "./Toast";
 import styles from "./CustomerPortal.module.css";
 
-export default function CustomerPortal() {
+export default function CustomerPortal({ user }) {
   const navigate = useNavigate();
 
-  // Logged-in user
-  const [user, setUser] = useState(null);
-
-  // Token for authenticated requests
-  const [token, setToken] = useState(null);
-
-  // Toast notifications
+  const [token] = useState(localStorage.getItem("token"));
   const [toast, setToast] = useState(null);
-  const showToast = (message, type = "success") => setToast({ message, type });
-
-  // Step management
   const [step, setStep] = useState(1);
+  const [paymentId, setPaymentId] = useState(null);
 
-  // Step 1: Payment form data
   const [paymentData, setPaymentData] = useState({
     amount: "",
     currency: "",
     provider: "",
   });
 
-  // Step 2: Beneficiary form data
   const [beneficiaryData, setBeneficiaryData] = useState({
     beneficiaryName: "",
     accountNumber: "",
@@ -35,24 +25,21 @@ export default function CustomerPortal() {
     reference: "",
   });
 
-  // Payment ID returned from backend
-  const [paymentId, setPaymentId] = useState(null);
+  const showToast = (message, type = "success") => {
+    console.log(`🔔 Toast: ${type} - ${message}`);
+    setToast({ message, type });
+  };
 
-  // Fetch logged-in user and token from localStorage
+  // ✅ Redirect if user is missing or role is wrong
   useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-    const storedToken = localStorage.getItem("token");
-
-    if (!loggedInUser?._id || !storedToken) {
-      showToast("User not logged in", "error");
+    if (!user || user.role !== "customer") {
+      showToast("Access denied. Redirecting...", "error");
       navigate("/login");
-    } else {
-      setUser(loggedInUser);
-      setToken(storedToken);
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
-  // Handle input change
+  if (!user || user.role !== "customer") return null;
+
   const handlePaymentChange = (e) => {
     setPaymentData({ ...paymentData, [e.target.name]: e.target.value });
   };
@@ -61,7 +48,6 @@ export default function CustomerPortal() {
     setBeneficiaryData({ ...beneficiaryData, [e.target.name]: e.target.value });
   };
 
-  // Step 1: Submit Payment
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
     const { amount, currency, provider } = paymentData;
@@ -76,7 +62,7 @@ export default function CustomerPortal() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           accountNumber: user.accountNumber,
@@ -87,6 +73,7 @@ export default function CustomerPortal() {
       });
 
       const data = await response.json();
+      console.log("📦 Payment response:", data);
 
       if (!response.ok) {
         showToast(data.error || "Payment initialization failed.", "error");
@@ -97,12 +84,11 @@ export default function CustomerPortal() {
       showToast("Payment initialized! Proceed to beneficiary.", "success");
       setStep(2);
     } catch (err) {
-      console.error("Payment Error:", err);
+      console.error("❌ Payment Error:", err);
       showToast("Server error. Please try again later.", "error");
     }
   };
 
-  // Step 2: Submit Beneficiary Transfer
   const handleBeneficiarySubmit = async (e) => {
     e.preventDefault();
     const { beneficiaryName, accountNumber, bankName, swiftCode, reference } = beneficiaryData;
@@ -117,10 +103,10 @@ export default function CustomerPortal() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          accountNumber: user.accountNumber, 
+          accountNumber: user.accountNumber,
           beneficiaryName,
           accountNumberBeneficiary: accountNumber,
           bankName,
@@ -133,6 +119,7 @@ export default function CustomerPortal() {
       });
 
       const data = await response.json();
+      console.log("📦 Transfer response:", data);
 
       if (!response.ok) {
         showToast(data.error || "Transfer failed", "error");
@@ -142,7 +129,7 @@ export default function CustomerPortal() {
       showToast("Transfer completed successfully!", "success");
       setTimeout(() => navigate("/home"), 1500);
     } catch (err) {
-      console.error("Transfer Error:", err);
+      console.error("❌ Transfer Error:", err);
       showToast("Server error. Please try again later.", "error");
     }
   };
@@ -153,11 +140,9 @@ export default function CustomerPortal() {
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      {user && (
-        <p>
-          Welcome, {user.fullName} | Account: {user.accountNumber}
-        </p>
-      )}
+      <p>
+        Welcome, {user.fullName} | Account: {user.accountNumber}
+      </p>
 
       {step === 1 && (
         <>

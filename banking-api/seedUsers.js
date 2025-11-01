@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
 const User = require("./models/User");
 
@@ -10,63 +9,99 @@ const seedUsers = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    const users = [
+    // 🗑 Delete existing employees and customers
+    await User.deleteMany({ role: { $in: ["employee", "customer"] } });
+    console.log("🧹 Old employees and customers removed");
+
+    // 🧠 Fresh Employees
+    const newEmployees = [
       {
-        fullName: "Thabo Mokoena",
-        idNumber: "1234567890123",
-        accountNumber: "100000000001",
+        fullName: "Ayanda Maseko",
+        idNumber: "8705144809081",
+        accountNumber: "7058923410071",
         password: "Password123",
-        email: "thabo@bank.com",
+        email: "ayanda@bank.com",
         role: "employee",
       },
       {
-        fullName: "Lerato Dlamini",
-        idNumber: "1234567890124",
-        accountNumber: "100000000002",
+        fullName: "Kabelo Mokoena",
+        idNumber: "9008215801023",
+        accountNumber: "8149872301122",
         password: "Password123",
-        email: "lerato@bank.com",
+        email: "kabelo@bank.com",
         role: "employee",
       },
       {
-        fullName: "Itumeleng Ndlovu",
-        idNumber: "1234567890125",
-        accountNumber: "200000000001",
+        fullName: "Naledi Radebe",
+        idNumber: "9301064805078",
+        accountNumber: "6294513072227",
         password: "Password123",
-        email: "itu@bank.com",
+        email: "naledi@bank.com",
+        role: "employee",
+      },
+      {
+        fullName: "Sipho Zuma",
+        idNumber: "9509015809982",
+        accountNumber: "9375628453219",
+        password: "Password123",
+        email: "sipho@bank.com",
+        role: "employee",
+      },
+    ];
+
+    // 👥 Customers
+    const newCustomers = [
+      {
+        fullName: "Lebogang Motsepe",
+        idNumber: "9603094808083",
+        accountNumber: "6719234567802",
+        password: "Password123",
+        email: "lebogang@gmail.com",
         role: "customer",
       },
       {
-        fullName: "Ndelisiwe Khumalo",
-        idNumber: "1234567890126",
-        accountNumber: "200000000002",
+        fullName: "Thandiwe Ngcobo",
+        idNumber: "8407215802034",
+        accountNumber: "5192837465203",
         password: "Password123",
-        email: "ndeldi@bank.com",
+        email: "thandiwe@gmail.com",
+        role: "customer",
+      },
+      {
+        fullName: "Mpho Khumalo",
+        idNumber: "9106045809182",
+        accountNumber: "7823649182036",
+        password: "Password123",
+        email: "mpho@gmail.com",
+        role: "customer",
+      },
+      {
+        fullName: "Sizwe Ndlela",
+        idNumber: "8804234801029",
+        accountNumber: "4318762598172",
+        password: "Password123",
+        email: "sizwe@gmail.com",
+        role: "customer",
+      },
+      {
+        fullName: "Precious Dube",
+        idNumber: "9708125805031",
+        accountNumber: "9021837465201",
+        password: "Password123",
+        email: "precious@gmail.com",
         role: "customer",
       },
     ];
 
-    for (const user of users) {
-      const exists = await User.findOne({ accountNumber: user.accountNumber });
-      if (exists) {
-        console.log(`⚠️ Already exists: ${user.fullName}`);
-        continue;
-      }
+    const allUsers = [...newEmployees, ...newCustomers];
 
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      const newUser = new User({
-        fullName: user.fullName,
-        idNumber: user.idNumber,
-        accountNumber: user.accountNumber,
-        password: hashedPassword,
-        email: user.email,
-        role: user.role,
-      });
-
+    for (const userData of allUsers) {
+      const newUser = new User(userData);
       await newUser.save();
-      console.log(`✅ Created: ${user.fullName} (${user.role})`);
+      console.log(`✅ Created: ${newUser.fullName} (${newUser.role})`);
     }
 
-    mongoose.disconnect();
+    await mongoose.disconnect();
     console.log("🔌 Disconnected from MongoDB");
   } catch (err) {
     console.error("❌ Seeding error:", err.message);

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Toast from "./Toast";
 import styles from "./Login.module.css";
 
-export default function Login() {
+export default function Login({ setUser }) {
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState({
     fullName: "",
@@ -13,11 +13,49 @@ export default function Login() {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const showToast = (message, type = "success") => setToast({ message, type });
+  const showToast = (message, type = "success") => {
+    console.log(`🔔 Toast: ${type} - ${message}`);
+    setToast({ message, type });
+  };
 
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
+
+  // Check if token exists and fetch user info
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/me", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          localStorage.removeItem("token");
+          console.warn("⛔ Token invalid or expired, please login again.");
+          return;
+        }
+
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+          const role = data.user.role;
+          if (role === "employee") navigate("/employee-portal");
+          else if (role === "customer") navigate("/customer-portal");
+        }
+      } catch (err) {
+        console.error("❌ Fetch user error:", err);
+      }
+    };
+
+    fetchUser();
+  }, [navigate, setUser]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,8 +67,11 @@ export default function Login() {
     }
 
     setLoading(true);
+    console.log("📨 Submitting login form with:", loginData);
 
     try {
+      localStorage.removeItem("token"); // only remove token
+
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,28 +82,35 @@ export default function Login() {
         }),
       });
 
+      console.log("📡 Login response status:", response.status);
       const data = await response.json();
+      console.log("📦 Login response data:", data);
 
-      if (!response.ok) {
+      if (!response.ok || !data.token || !data.user) {
         showToast(data.error || "Login failed", "error");
         return;
       }
 
+      // Save token
       localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "loggedInUser",
-        JSON.stringify({
-          _id: data.user.id,
-          fullName: data.user.fullName,
-          accountNumber: data.user.accountNumber,
-        })
-      );
+      console.log("🔐 Token saved to localStorage");
 
+      setUser(data.user);
       showToast(`Welcome back, ${data.user.fullName}!`, "success");
 
-      setTimeout(() => navigate("/customer-portal"), 1000);
+      // Redirect based on role
+      setTimeout(() => {
+        const role = data.user.role;
+        if (role === "employee") navigate("/employee-portal");
+        else if (role === "customer") navigate("/customer-portal");
+        else {
+          console.warn("⛔ Unknown role:", role);
+          showToast("Unknown user role. Please contact support.", "error");
+          navigate("/login");
+        }
+      }, 500);
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("❌ Login error:", err);
       showToast("Server error. Please try again later.", "error");
     } finally {
       setLoading(false);
