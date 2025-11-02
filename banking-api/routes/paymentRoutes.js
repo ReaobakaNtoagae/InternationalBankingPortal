@@ -1,10 +1,7 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const xss = require("xss");
-const validator = require("validator");
 const router = express.Router();
 const Payment = require("../models/Payment");
-const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const swiftMap = {
@@ -43,7 +40,7 @@ router.get("/pending", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Update status
+// ✅ Update payment status
 router.patch("/:id/status", authMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
@@ -72,11 +69,35 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
 // ✅ Get submitted transactions
 router.get("/submitted", authMiddleware, async (req, res) => {
   try {
-    const submitted = await Payment.find({ status: "submitted", type: "transfer" }).lean();
-    return res.status(200).json({ transactions: submitted });
+    const submitted = await Payment.find({ status: "submitted" }).lean();
+    const enriched = submitted.map(p => ({
+      ...p,
+      bankName: p.bankName || swiftMap[p.swiftCode?.trim().toUpperCase()] || "—"
+    }));
+    return res.status(200).json({ transactions: enriched });
   } catch (err) {
     console.error("❌ /submitted route error:", err);
     return res.status(500).json({ error: "Server error fetching submitted transactions." });
+  }
+});
+
+// ✅ Reject payment explicitly
+router.patch("/:id/reject", authMiddleware, async (req, res) => {
+  try {
+    const updated = await Payment.findByIdAndUpdate(
+      req.params.id,
+      { status: "rejected" },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ error: "Payment not found." });
+    }
+
+    return res.json({ message: "Payment rejected.", payment: updated });
+  } catch (err) {
+    console.error("[Reject] Error:", err);
+    return res.status(500).json({ error: "Internal server error." });
   }
 });
 

@@ -29,6 +29,7 @@ export default function EmployeePortal({ user }) {
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState({});
+  const [activeTab, setActiveTab] = useState("pending");
 
   useEffect(() => {
     if (!user || user.role !== "employee") {
@@ -46,18 +47,17 @@ export default function EmployeePortal({ user }) {
     fetch("http://localhost:5000/api/payments/pending", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch pending payments");
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        const uniquePayments = Array.from(
-          new Map(data.payments.map((p) => [p._id, p])).values()
-        );
-        setPendingPayments(uniquePayments);
-      })
-      .catch(() => {
-        setError("Unable to load pending payments.");
+        setPendingPayments(data.payments || []);
+      });
+
+    fetch("http://localhost:5000/api/payments/submitted", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setSubmittedPayments(data.transactions || []);
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -95,38 +95,47 @@ export default function EmployeePortal({ user }) {
     }, 1500);
   };
 
-const handleSwiftSubmit = (payment) => {
-  fetch(`http://localhost:5000/api/payments/${payment._id}/status`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ status: "submitted" }),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to update status");
-      return res.json();
+  const handleSwiftSubmit = (payment) => {
+    fetch(`http://localhost:5000/api/payments/${payment._id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: "submitted" }),
     })
-    .then(() => {
-      showToast("SWIFT submission successful.", "success");
-      setVerifiedPayments((prev) =>
-        prev.filter((p) => p._id !== payment._id)
-      );
-
-      fetch("http://localhost:5000/api/payments/submitted", {
-        headers: { Authorization: `Bearer ${token}` },
+      .then((res) => res.json())
+      .then(() => {
+        showToast("SWIFT submission successful.", "success");
+        setVerifiedPayments((prev) =>
+          prev.filter((p) => p._id !== payment._id)
+        );
+        setSubmittedPayments((prev) => [...prev, payment]);
       })
-        .then((res) => res.json())
-        .then((data) => {
-          setSubmittedPayments(data.transactions || []);
-        });
+      .catch(() => {
+        showToast("SWIFT submission failed.", "error");
+      });
+  };
+
+  const handleReject = (payment) => {
+    fetch(`http://localhost:5000/api/payments/${payment._id}/reject`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     })
-    .catch((err) => {
-      console.error("❌ SWIFT Submit error:", err);
-      showToast("SWIFT submission failed.", "error");
-    });
-};
+      .then((res) => res.json())
+      .then(() => {
+        showToast("Payment rejected.", "success");
+        setUnverifiedPayments((prev) =>
+          prev.filter((p) => p._id !== payment._id)
+        );
+      })
+      .catch(() => {
+        showToast("Failed to reject payment.", "error");
+      });
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -150,101 +159,101 @@ const handleSwiftSubmit = (payment) => {
         Logout
       </button>
 
-      {loading && <p>Loading pending payments...</p>}
+      <div className={styles.tabBar}>
+        {["pending", "unverified", "verified", "submitted"].map((tab) => (
+          <button
+            key={tab}
+            className={`${styles.tabButton} ${
+              activeTab === tab ? styles.active : ""
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)} Payments
+          </button>
+        ))}
+      </div>
+
+      <h2 className={styles.tabHeading}>
+        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Payments
+      </h2>
+
+      {loading && <p>Loading payments...</p>}
       {error && <p className={styles.error}>{error}</p>}
 
       <div className={styles.grid}>
-        <div className={styles.column}>
-          <h2>Pending Payments</h2>
-          <div className={styles.paymentList}>
-            {pendingPayments.map((payment) => {
-              const status = verificationStatus[payment._id] || {};
-              return (
-                <div key={payment._id} className={styles.paymentCard}>
-                  <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
-                  <p><strong>Provider:</strong> {payment.provider}</p>
-                  <p><strong>Status:</strong> {payment.status}</p>
-                  <p><strong>Created:</strong> {new Date(payment.createdAt).toLocaleString()}</p>
-                  {payment.type === "transfer" && (
-                    <>
-                      <hr />
-                      <p><strong>Beneficiary Name:</strong> {payment.beneficiaryName}</p>
-                      <p><strong>Beneficiary Account Number:</strong> {payment.accountNumber}</p>
-                      <p><strong>Bank Name:</strong> {payment.bankName}</p>
-                      <p><strong>SWIFT Code:</strong> {payment.swiftCode}</p>
-                      <p><strong>Reference:</strong> {payment.reference || "—"}</p>
-                    </>
-                  )}
-                  <div className={styles.buttonGroup}>
-                    <button
-                      className={styles.verifyButton}
-                      onClick={() => handleVerify(payment)}
-                      disabled={status.verifying}
-                    >
-                      {status.verifying ? "Verifying..." : "Verify"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className={styles.column}>
-          <h2>Unverified Payments</h2>
-          <div className={styles.paymentList}>
-            {unverifiedPayments.map((payment) => (
-              <div key={payment._id} className={styles.paymentCard}>
-                <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
-                <p><strong>Bank:</strong> {payment.bankName}</p>
-                <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
-                <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
-                <p><strong>Account:</strong> {payment.accountNumber}</p>
-                <p><strong>Reference:</strong> {payment.reference || "—"}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.column}>
-          <h2>Verification Successful</h2>
-          <div className={styles.paymentList}>
-            {verifiedPayments.map((payment) => (
-              <div key={payment._id} className={styles.paymentCard}>
-                <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
-                <p><strong>Bank:</strong> {payment.bankName}</p>
-                <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
-                <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
-                <p><strong>Account:</strong> {payment.accountNumber}</p>
-                <p><strong>Reference:</strong> {payment.reference || "—"}</p>
+        {activeTab === "pending" &&
+          pendingPayments.map((payment) => (
+            <div key={payment._id} className={styles.paymentCard}>
+              <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
+              <p><strong>Bank Name:</strong> {payment.bankName}</p>
+              <p><strong>Account Number:</strong> {payment.accountNumber}</p>
+              <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
+              <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
+              <p><strong>Reference:</strong> {payment.reference}</p>
+              <div className={styles.buttonGroup}>
                 <button
-                  className={styles.swiftButton}
-                  onClick={() => handleSwiftSubmit(payment)}
+                  className={styles.verifyButton}
+                  onClick={() => handleVerify(payment)}
                 >
-                  SWIFT Submit
+                  Verify
                 </button>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          ))}
 
-        <div className={styles.column}>
-          <h2>Submitted Payments</h2>
-          <div className={styles.paymentList}>
-            {submittedPayments.map((payment) => (
-              <div key={payment._id} className={styles.paymentCard}>
-                <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
-                <p><strong>Bank:</strong> {payment.bankName}</p>
-                <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
-                <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
-                <p><strong>Account:</strong> {payment.accountNumber}</p>
-                <p><strong>Reference:</strong> {payment.reference || "—"}</p>
-                <p><strong>Submitted:</strong> {new Date().toLocaleString()}</p>
+        {activeTab === "unverified" &&
+          unverifiedPayments.map((payment) => (
+            <div key={payment._id} className={styles.paymentCard}>
+              <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
+              <p><strong>Bank Name:</strong> {payment.bankName}</p>
+              <p><strong>Account Number:</strong> {payment.accountNumber}</p>
+              <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
+              <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
+              <p><strong>Reference:</strong> {payment.reference}</p>
+              <div className={styles.buttonGroup}>
+                <button
+                  className={styles.rejectButton}
+                  onClick={() => handleReject(payment)}
+                >
+                  Reject
+                </button>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          ))}
+
+        {activeTab === "verified" &&
+          verifiedPayments.map((payment) => (
+            <div key={payment._id} className={styles.paymentCard}>
+              <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
+              <p><strong>Bank Name:</strong> {payment.bankName}</p>
+              <p><strong>Account Number:</strong> {payment.accountNumber}</p>
+              <p><strong>Beneficiary:</strong> {payment.beneficiaryName}</p>
+              <p><strong>SWIFT:</strong> {payment.swiftCode}</p>
+              <p><strong>Reference:</strong> {payment.reference}</p>
+              <button
+                className={styles.swiftButton}
+                onClick={() => handleSwiftSubmit(payment)}
+              >
+                
+                SWIFT Submit
+              </button>
+            </div>
+          ))}
+
+        {activeTab === "submitted" &&
+          submittedPayments.map((payment) => (
+            <div key={payment._id} className={styles.paymentCard}>
+              <p><strong>Amount:</strong> {payment.amount} {payment.currency}</p>
+              <p><strong>Bank Name:</strong> {payment.bankName || "—"}</p>
+              <p><strong>Account Number:</strong> {payment.accountNumber || "—"}</p>
+              <p><strong>Beneficiary:</strong> {payment.beneficiaryName || "—"}</p>
+              <p><strong>SWIFT:</strong> {payment.swiftCode || "—"}</p>
+              <p><strong>Reference:</strong> {payment.reference || "—"}</p>
+              <p><strong>Submitted:</strong> {new Date(payment.updatedAt || payment.createdAt).toLocaleString()}</p>
+            </div>
+          ))}
       </div>
     </div>
   );
 }
+

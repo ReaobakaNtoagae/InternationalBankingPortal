@@ -33,17 +33,12 @@ p {
   color: #3a3a5c;
 }
 
-.section {
-  margin-top: 40px;
-  width: 100%;
-}
-
-.section h2 {
-  font-size: 24px;
+.tabHeading {
+  font-size: 28px;
   font-weight: 700;
-  color: #2c4a8a;
-  margin-bottom: 16px;
   text-align: center;
+  margin-bottom: 20px;
+  color: #2c2c4a;
 }
 
 .paymentList {
@@ -75,7 +70,8 @@ p {
 }
 
 .verifyButton,
-.swiftButton {
+.swiftButton,
+.rejectButton {
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 600;
@@ -103,6 +99,15 @@ p {
   background-color: #1e3260;
 }
 
+.rejectButton {
+  background-color: #b00020;
+  color: #fff;
+}
+
+.rejectButton:hover {
+  background-color: #8a0018;
+}
+
 .logout {
   margin-top: 20px;
   padding: 10px 20px;
@@ -124,10 +129,9 @@ p {
   margin-top: 20px;
 }
 
-/* ✅ Grid layout for 4 columns */
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: 24px;
   width: 100%;
   margin-top: 40px;
@@ -136,4 +140,32 @@ p {
 .column {
   display: flex;
   flex-direction: column;
+}
+
+.tabBar {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 30px 0;
+}
+
+.tabButton {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #dcdcdc, #eaeaea);
+  color: #333;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.tabButton:hover {
+  background: linear-gradient(90deg, #ccc, #ddd);
+}
+
+.active {
+  background: linear-gradient(90deg, #2c2c4a, #4a4a70);
+  color: #fff;
 }
