@@ -9,96 +9,98 @@ const seedUsers = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // 🗑 Delete existing employees and customers
-    await User.deleteMany({ role: { $in: ["employee", "customer"] } });
-    console.log("🧹 Old employees and customers removed");
+    // 🗑 Delete all existing employees
+    await User.deleteMany({ role: "employee" });
+    console.log("🧹 Old employees removed");
 
-    // 🧠 Fresh Employees
+    // 🧠 Fresh new employees
     const newEmployees = [
       {
-        fullName: "Ayanda Maseko",
-        idNumber: "8705144809081",
-        accountNumber: "7058923410071",
+        fullName: "Nomvula Khumalo",
+        idNumber: "9203054809081",
+        accountNumber: "7058391620471",
         password: "Password123",
-        email: "ayanda@bank.com",
+        email: "nomvula@bank.com",
         role: "employee",
       },
       {
-        fullName: "Kabelo Mokoena",
-        idNumber: "9008215801023",
-        accountNumber: "8149872301122",
+        fullName: "Themba Dlamini",
+        idNumber: "8806215809082",
+        accountNumber: "8149623705482",
         password: "Password123",
-        email: "kabelo@bank.com",
+        email: "themba@bank.com",
         role: "employee",
       },
       {
-        fullName: "Naledi Radebe",
-        idNumber: "9301064805078",
-        accountNumber: "6294513072227",
+        fullName: "Sibongile Mthethwa",
+        idNumber: "9009145809083",
+        accountNumber: "6294713085627",
         password: "Password123",
-        email: "naledi@bank.com",
+        email: "sibongile@bank.com",
         role: "employee",
       },
       {
-        fullName: "Sipho Zuma",
-        idNumber: "9509015809982",
-        accountNumber: "9375628453219",
+        fullName: "Lwazi Ncube",
+        idNumber: "9502135809084",
+        accountNumber: "9371628453019",
         password: "Password123",
-        email: "sipho@bank.com",
+        email: "lwazi@bank.com",
         role: "employee",
+      },
+      {
+        fullName: "Zinhle Mokoena",
+        idNumber: "9107295809085",
+        accountNumber: "8613942057806",
+        password: "Password123",
+        email: "zinhle@bank.com",
+        role: "employee",
+      },
+      {
+        fullName: "Thulani Mthembu",
+        idNumber: "8905045809086",
+        accountNumber: "7205184962037",
+        password: "Password123",
+        email: "thulani@bank.com",
+        role: "employee",
+      },
+      {
+        fullName: "Sibusiso Dlamini",
+        idNumber: "9007215482093",
+        accountNumber: "7109834501274",
+        password: "Secure#459",
+        email: "sibusiso.dlamini@example.com",
+        role: "customer",
+      },
+      {
+        fullName: "Anele Mokoena",
+        idNumber: "9702147856031",
+        accountNumber: "6805421973308",
+        password: "Client*2024",
+        email: "anele.mokoena@example.com",
+        role: "customer",
+      },
+      {
+        fullName: "Boitumelo Molefe",
+        idNumber: "8809103746025",
+        accountNumber: "7301198456021",
+        password: "Pass@9988",
+        email: "boitumelo.molefe@example.com",
+        role: "customer",
+      },
+      {
+        fullName: "Karabo Selemela",
+        idNumber: "0204056432081",
+        accountNumber: "7802654920134",
+        password: "Karabo!2025",
+        email: "karabo.selemela@example.com",
+        role: "customer",
       },
     ];
 
-    // 👥 Customers
-    const newCustomers = [
-      {
-        fullName: "Lebogang Motsepe",
-        idNumber: "9603094808083",
-        accountNumber: "6719234567802",
-        password: "Password123",
-        email: "lebogang@gmail.com",
-        role: "customer",
-      },
-      {
-        fullName: "Thandiwe Ngcobo",
-        idNumber: "8407215802034",
-        accountNumber: "5192837465203",
-        password: "Password123",
-        email: "thandiwe@gmail.com",
-        role: "customer",
-      },
-      {
-        fullName: "Mpho Khumalo",
-        idNumber: "9106045809182",
-        accountNumber: "7823649182036",
-        password: "Password123",
-        email: "mpho@gmail.com",
-        role: "customer",
-      },
-      {
-        fullName: "Sizwe Ndlela",
-        idNumber: "8804234801029",
-        accountNumber: "4318762598172",
-        password: "Password123",
-        email: "sizwe@gmail.com",
-        role: "customer",
-      },
-      {
-        fullName: "Precious Dube",
-        idNumber: "9708125805031",
-        accountNumber: "9021837465201",
-        password: "Password123",
-        email: "precious@gmail.com",
-        role: "customer",
-      },
-    ];
-
-    const allUsers = [...newEmployees, ...newCustomers];
-
-    for (const userData of allUsers) {
+    for (const userData of newEmployees) {
       const newUser = new User(userData);
       await newUser.save();
-      console.log(`✅ Created: ${newUser.fullName} (${newUser.role})`);
+      console.log(`✅ Created: ${newUser.fullName} (${newUser.accountNumber})`);
     }
 
     await mongoose.disconnect();

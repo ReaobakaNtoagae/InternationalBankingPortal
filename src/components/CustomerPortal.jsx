@@ -134,6 +134,11 @@ export default function CustomerPortal({ user }) {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className={styles.container}>
       {toast && (
@@ -187,6 +192,9 @@ export default function CustomerPortal({ user }) {
             </select>
             <button type="submit" className={styles.button}>
               Next: Beneficiary
+            </button>
+            <button type="button" onClick={handleLogout} className={styles.logout}>
+              Logout
             </button>
           </form>
         </>

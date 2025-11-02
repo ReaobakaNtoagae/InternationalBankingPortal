@@ -4,7 +4,7 @@
   align-items: center;
   padding: 90px 80px;
   width: 100%;
-  max-width: 700px;
+  max-width: 1400px;
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(20px) saturate(180%);
   border-radius: 32px;
@@ -33,10 +33,20 @@ p {
   color: #3a3a5c;
 }
 
-/* ✅ New styles for pending payments */
+.section {
+  margin-top: 40px;
+  width: 100%;
+}
+
+.section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c4a8a;
+  margin-bottom: 16px;
+  text-align: center;
+}
 
 .paymentList {
-  margin-top: 30px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -57,8 +67,73 @@ p {
   color: #333;
 }
 
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.verifyButton,
+.swiftButton {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.verifyButton {
+  background-color: #4a4a70;
+  color: #fff;
+}
+
+.verifyButton:hover {
+  background-color: #3a3a5c;
+}
+
+.swiftButton {
+  background-color: #2c4a8a;
+  color: #fff;
+}
+
+.swiftButton:hover {
+  background-color: #1e3260;
+}
+
+.logout {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #843d66;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background-color: #6a2f50;
+}
+
 .error {
   color: #b00020;
   font-weight: 600;
   margin-top: 20px;
+}
+
+/* ✅ Grid layout for 4 columns */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-top: 40px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
 }

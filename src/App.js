@@ -14,43 +14,53 @@ import EmployeePortal from "./components/EmployeePortal";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Prevent premature routing
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("🔐 Token found in localStorage:", token);
 
-    if (!token) {
-      console.warn("⚠️ No token found. User not authenticated.");
+    // ✅ Fix: prevent printing "null" as a token
+    if (!token || token === "null" || token === "undefined") {
+      console.warn("⚠️ No valid token found. User not authenticated.");
       setLoading(false);
       return;
     }
 
+    console.log("🔐 Token found in localStorage:", token);
+
+    // ✅ Fetch authenticated user details
     fetch("http://localhost:5000/api/auth/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => {
+      .then(async (res) => {
         console.log("📡 /api/auth/me response status:", res.status);
-        return res.json();
-      })
-      .then((data) => {
+        const data = await res.json();
         console.log("📦 /api/auth/me response data:", data);
-        if (data.user) {
-          console.log("✅ Authenticated user:", data.user.fullName, "| Role:", data.user.role);
+
+        if (res.ok && data.user) {
+          console.log(
+            "✅ Authenticated user:",
+            data.user.fullName,
+            "| Role:",
+            data.user.role
+          );
           setUser(data.user);
         } else {
-          console.warn("❌ No user found in response.");
+          console.warn("❌ Invalid token or no user found in response.");
+          localStorage.removeItem("token"); // ✅ clear bad token
         }
         setLoading(false);
       })
       .catch((err) => {
         console.error("❌ Error fetching user:", err);
+        localStorage.removeItem("token");
         setLoading(false);
       });
   }, []);
 
+  // ✅ Prevent routes from rendering before auth state is known
   if (loading) {
     console.log("⏳ Waiting for user authentication...");
     return <div>Loading...</div>;
@@ -59,37 +69,40 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Default route */}
         <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Public routes */}
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/home" element={<Home />} />
         <Route path="/beneficiary" element={<BeneficiaryPayment />} />
 
-        {/* ✅ Customer Portal — protected */}
+        {/* Protected: Customer Portal */}
         <Route
           path="/customer-portal"
           element={
-            user?.role === "customer" ? (
+            user && user.role === "customer" ? (
               <CustomerPortal user={user} />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* ✅ Employee Portal — protected */}
+        {/* Protected: Employee Portal */}
         <Route
           path="/employee-portal"
           element={
-            user?.role === "employee" ? (
+            user && user.role === "employee" ? (
               <EmployeePortal user={user} />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* ✅ Catch-all fallback */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

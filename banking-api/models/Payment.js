@@ -8,7 +8,8 @@ const paymentSchema = new mongoose.Schema(
     provider: { type: String },
 
     beneficiaryName: { type: String },
-    beneficiaryAccount: { type: String },
+    accountNumber: { type: String }, // ✅ renamed from beneficiaryAccount
+    bankName: { type: String },      // ✅ added to support frontend display
     swiftCode: { type: String },
     reference: { type: String },
 
@@ -20,7 +21,7 @@ const paymentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "submitted"], // ✅ added "submitted"
       default: "pending",
     },
   },
