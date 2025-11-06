@@ -3,20 +3,23 @@ version: 2.1
 jobs:
   sonarcloud-scan:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: cimg/node:18.17.0
     steps:
       - checkout
+
       - run:
-          name: Install SonarScanner
+          name: Install SonarScanner CLI
           command: |
             curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
             unzip sonar-scanner.zip -d $HOME
             echo 'export PATH="$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH"' >> $BASH_ENV
+
       - run:
-          name: Build Project
-          command: ./gradlew build
+          name: Install project dependencies
+          command: npm install
+
       - run:
-          name: Run SonarCloud Scan
+          name: Run SonarCloud scan
           command: sonar-scanner -Dsonar.login=$SONAR_TOKEN
 
 workflows:
