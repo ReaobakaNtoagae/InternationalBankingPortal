@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  sonarcloud-scan:
+  sonarqube-scan:
     docker:
       - image: cimg/node:18.17.0
     steps:
@@ -19,10 +19,17 @@ jobs:
           command: npm install
 
       - run:
-          name: Run SonarCloud scan
-          command: sonar-scanner -Dsonar.login=$SONAR_TOKEN
+          name: Run SonarQube scan
+          command: |
+            sonar-scanner \
+              -Dsonar.projectKey=InternationalBankingPortal \
+              -Dsonar.sources=src \
+              -Dsonar.java.binaries=build \
+              -Dsonar.host.url=$SONARQUBE_URL \
+              -Dsonar.login=$SONARQUBE_TOKEN
 
 workflows:
-  sonarcloud-workflow:
+  version: 2
+  sonarqube-workflow:
     jobs:
-      - sonarcloud-scan
+      - sonarqube-scan
