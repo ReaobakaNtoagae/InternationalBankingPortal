@@ -19,14 +19,14 @@ jobs:
           command: npm install
 
       - run:
-          name: Run SonarCloud scan
+          name: Run SonarCloud Scan
           command: |
             sonar-scanner \
-              -Dsonar.organization=$SONAR_ORG \
-              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.organization=aadeza \
+              -Dsonar.projectKey=aadeza_InternationalBankingPortal \
               -Dsonar.sources=src \
               -Dsonar.java.binaries=build \
-              -Dsonar.host.url=$SONARQUBE_URL \
+              -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONAR_TOKEN
 
 workflows:
