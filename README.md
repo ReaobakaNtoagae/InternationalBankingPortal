@@ -111,7 +111,7 @@ Run node server.js in banking-api
 
 **Run frontend**
 Run npm start in InternationalPaymentsPortal
-
+Login with information from seedUsers.js
 Use separate terminals
 
 **Access the app**
