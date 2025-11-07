@@ -7,9 +7,7 @@ import {
 } from "react-router-dom";
 
 import Login from "./components/Login";
-import Home from "./components/Home";
 import CustomerPortal from "./components/CustomerPortal";
-import BeneficiaryPayment from "./components/BeneficiaryPayment";
 import EmployeePortal from "./components/EmployeePortal";
 import Transactions from "./components/Transactions";
 
@@ -76,7 +74,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/transactions" element={<Transactions />} />
-        <Route path="/beneficiary" element={<BeneficiaryPayment />} />
+    
 
         {/* Protected: Customer Portal */}
         <Route
