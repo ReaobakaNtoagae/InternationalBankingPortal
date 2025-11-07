@@ -1,108 +1,141 @@
-International Payments Portal
+**International Payments & Employee Portal**
 
-This project is a React frontend with a Node.js / Express backend for secure international payments. Users can register, log in, and perform transactions while the app enforces strong security measures.
+This project is a React frontend with a Node.js / Express backend for secure international payments and employee management.
+Users can securely log in and perform payment-related operations, while employees can manage, approve, and track payments.
+The app enforces strong security measures such as input validation, hashed credentials, JWT authentication, and rate limiting.
 
-Project Overview
+**Project Overview
+Frontend**
 
-Frontend: React components handle registration, login, and transaction forms.
+Built with React, featuring:
 
-Backend: Node.js + Express API with MongoDB database, handling authentication, payment processing, and input validation.
+Login interface for authenticated access.
 
-Security: Strong measures including input validation, hashed passwords, JWT authentication, rate limiting, and HTTPS enforcement.
+Payment and transaction forms.
 
-Project Structure
+Employee portal with payment management (view, approve, reject, and monitor transactions).
+
+Clean, responsive UI with role-based access.
+
+**Backend**
+
+Powered by Node.js + Express + MongoDB:
+
+Handles authentication and payment processing.
+
+Implements input validation and sanitization.
+
+Enforces role-based access for employees and users.
+
+**Security**
+
+Robust, multi-layered security system including:
+
+Input sanitization (XSS protection).
+
+Password hashing (bcrypt).
+
+JWT authentication.
+
+Rate limiting & Helmet headers.
+
+HTTPS enforcement in production.
+
+**Project Structure**
 /banking-api         -> Backend API (Node.js + Express + MongoDB)
 /models              -> Mongoose models (User.js, Payment.js)
 /routes              -> API routes (authRoutes.js, paymentRoutes.js)
-/middleware          -> Middleware for authentication & security
+/middleware           -> Authentication & security middleware
 /src                  -> React frontend components
 /public               -> Static frontend files
 
-How the App Works
+**How the App Works**
+**Login**
 
-User Registration:
+Customers or employees log in using their account number, password, and full name.
 
-Users fill out a form with full name, ID number, account number, and password.
+The backend verifies credentials using bcrypt.
 
-The frontend validates inputs using whitelist RegEx patterns.
+A JWT token is issued upon successful authentication.
 
-Backend re-validates the input before saving.
+Token is used to access protected routes (like payment or employee operations).
 
-Passwords are hashed and salted using bcrypt.
+**Payments**
 
-A JWT token is issued for the user session.
+Authenticated customers can create and track international payments.
 
-Login:
+All payment inputs (amounts, recipient accounts, etc.) are validated and sanitized.
 
-Users submit account number and password.
+Payments are protected against XSS, injection, and DDoS attacks.
 
-Backend verifies the password using bcrypt.
+Employee accounts can approve, reject, or view pending payments.
 
-JWT token is issued on successful login for authenticated routes.
+**Employee Portal**
 
-Payments:
+Employees can log in and access additional routes:
 
-Authenticated users can create international payments.
+View all submitted, pending, or rejected payments.
 
-Backend validates all inputs (amounts, recipient account numbers) using strict patterns and type checks.
+Approve or reject transactions.
 
-Payment operations are protected against SQL injection, XSS, and DDoS attacks.
+Submit payments to SWIFT
 
-Security Measures & Checklist
-Security Point	Implementation
-Password security (hashing & salting)	Passwords hashed with bcrypt before storage. Login compares hashes.
-Input whitelist (RegEx validation)	Frontend & backend validate full name, ID number, account number, password, and payment inputs using strict RegEx patterns.
-Traffic over SSL	Enforced in production via redirect to HTTPS in server.js using x-forwarded-proto header. Tested in deployed environment.
-Protection against common attacks	- Helmet headers for CSP, HSTS, X-Frame-Options, XSS protection
-- Rate limiting to prevent brute-force / DDoS
-- CORS whitelist to control allowed origins
-- JWT authentication for protected routes
-- Error handling prevents sensitive data leaks
-- Sanitization & type validation for all user inputs
-Setup Instructions (Local Dev)
+Only authenticated employees with valid JWT tokens have access.
 
-Clone the repository:
+**Security Measures & Checklist
+Security Point	Implementation**
+Password security (hashing & salting): 
+Passwords hashed with bcrypt before storage. Login compares hashes.
 
+Input whitelist (RegEx validation): 
+Backend validates full name, account number, and payment data using strict patterns. It also validates input for transaction forms before submission. 
+
+Traffic over SSL	Enforced in production via redirect to HTTPS in server.js using x-forwarded-proto header.
+
+Protection against common attacks	Helmet headers for CSP, HSTS, X-Frame-Options, XSS; rate limiting; CORS whitelist; JWT authentication; and safe error handling.
+
+Sanitization & validation	All user and payment inputs sanitized with xss and validated before database interaction.
+
+**Setup Instructions (Local Development)**
+Clone the repository
 git clone <repo-url>
-cd InternationalBankingPortal
+cd InternationalPaymentsPortal
 
-
-Install dependencies:
-
+**Install dependencies**
 npm install
 cd banking-api
 npm install
 
+**Run backend server**
+Run node server.js in banking-api
 
-Create a .env file with the following:
+**Run frontend**
+Run npm start in InternationalPaymentsPortal
 
-MONGO_URI=<your-mongo-uri>
-JWT_SECRET=<your-secret>
-NODE_ENV=development
-PORT=5000
+Use separate terminals
 
+**Access the app**
 
-Run backend server:
+**Visit:**
+http://localhost:3000
 
-node server.js
+**Security Highlights**
 
+JWT tokens secure user sessions; expire daily.
 
-Run frontend:
+Rate limiting mitigates DDoS & brute-force attacks.
 
-npm start
+Helmet applies secure HTTP headers (CSP, HSTS, X-Frame-Options).
 
+Strict input validation blocks malicious or malformed data.
 
-Visit http://localhost:3000
- to test.
+Error handling ensures sensitive details are never leaked.
 
-Security Highlights
+XSS sanitization (xss npm module) applied to all inputs.
 
-JWT tokens secure sessions; expire daily.
+**Summary
+Role	Capabilities**
+Customer : 	Log in, create and view international payments
+Employee: Log in, view submitted payments, approve/reject transactions, submit payments to SWIFT, monitor payment history
 
-Rate limiting reduces DDoS & brute-force risks.
-
-Helmet sets secure HTTP headers (CSP, X-Frame-Options, HSTS).
-
-Input validation blocks malicious data using strict whitelist patterns.
-
-Error handling prevents sensitive stack traces from leaking.
+System	Secure authentication, encrypted storage, input sanitization, and safe API access
