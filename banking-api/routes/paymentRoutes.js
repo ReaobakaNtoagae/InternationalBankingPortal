@@ -20,7 +20,7 @@ const SWIFT_CODES = {
   "Bidvest Bank Limited": "BIDBZAJJXXX",
   "Capitec Bank Limited": "CABLZAJJXXX",
   "Discovery Bank Limited": "DISCZAJJ",
-  "First National Bank (FNB)": "FIRNZAJJ",
+  "First National Bank ": "FIRNZAJJ",
   "FirstRand Bank": "FIRNZAJJRSL",
   "Grindrod Bank Limited": "GRIDZAJJXXX",
   "Investec Bank Limited": "IVESZAJJXXX",
