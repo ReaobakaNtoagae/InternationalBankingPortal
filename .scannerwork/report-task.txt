@@ -1,0 +1,7 @@
+organization=aadeza
+projectKey=aadeza_InternationalBankingPortal
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.76375
+dashboardUrl=https://sonarcloud.io/dashboard?id=aadeza_InternationalBankingPortal
+ceTaskId=AZpa1SnTYm0pTCy2V6sJ
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZpa1SnTYm0pTCy2V6sJ

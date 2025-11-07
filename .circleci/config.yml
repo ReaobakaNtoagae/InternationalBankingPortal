@@ -1,0 +1,36 @@
+version: 2.1
+
+jobs:
+  sonarqube-scan:
+    docker:
+      - image: cimg/node:18.17.0
+    steps:
+      - checkout
+
+      - run:
+          name: Install SonarScanner CLI
+          command: |
+            curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+            unzip sonar-scanner.zip -d $HOME
+            echo 'export PATH="$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH"' >> $BASH_ENV
+
+      - run:
+          name: Install project dependencies
+          command: npm install
+
+      - run:
+          name: Run SonarCloud Scan
+          command: |
+            sonar-scanner \
+              -Dsonar.organization=aadeza \
+              -Dsonar.projectKey=aadeza_InternationalBankingPortal \
+              -Dsonar.sources=src \
+              -Dsonar.java.binaries=build \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login=$SONAR_TOKEN
+
+workflows:
+  version: 2
+  sonarqube-workflow:
+    jobs:
+      - sonarqube-scan
