@@ -50,7 +50,7 @@ export default function CustomerPortal({ user }) {
   };
 
   // ==========================
-  // ✅ Step 1: Payment Submit
+  //  Step 1: Payment Submit
   // ==========================
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
@@ -94,7 +94,7 @@ export default function CustomerPortal({ user }) {
   };
 
   // ==========================
-  // ✅ Step 2: Beneficiary Submit
+  //  Step 2: Beneficiary Submit
   // ==========================
   const handleBeneficiarySubmit = async (e) => {
     e.preventDefault();
@@ -152,7 +152,7 @@ export default function CustomerPortal({ user }) {
     navigate("/login");
   };
 
-  // ✅ Predefined Bank List (matches your backend SWIFT map)
+  // Predefined Bank List (matches backend SWIFT map)
   const bankOptions = [
     "Absa Bank Limited",
     "African Bank Limited",
@@ -285,7 +285,7 @@ export default function CustomerPortal({ user }) {
             onChange={handleBeneficiaryChange}
           />
           <button type="submit" className={styles.button} disabled={loading}>
-            {loading ? "Processing..." : "Submit Transfer"}
+            {loading ? "Processing..." : "Pay Now"}
           </button>
         </form>
       </>

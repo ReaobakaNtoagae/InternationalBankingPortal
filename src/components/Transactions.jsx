@@ -96,11 +96,11 @@ export default function Transactions() {
           </div>
           <div className={styles.statusItem}>
             <span className={`${styles.badge} ${styles.rejected}`}>Rejected</span>
-            <p>Transfer was declined due to invalid details or failed verification.</p>
+            <p>Transfer was declined due to invalid SWIFT Code.</p>
           </div>
           <div className={styles.statusItem}>
             <span className={`${styles.badge} ${styles.submitted}`}>Submitted</span>
-            <p>Verified transfer has been submitted to the payment provider.</p>
+            <p>Verified transfer has been submitted to SWIFT.</p>
           </div>
         </div>
       </div>

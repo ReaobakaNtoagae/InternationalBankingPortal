@@ -61,12 +61,12 @@ export default function Login({ setUser }) {
 
       const role = data.user.role;
       const userId = data.user.id;
-      console.log(`✅ Authenticated user: ${data.user.fullName} | Role: ${role} | ID: ${userId}`);
+      console.log(` Authenticated user: ${data.user.fullName} | Role: ${role} | ID: ${userId}`);
 
       setUser(data.user);
       showToast(`Welcome back, ${data.user.fullName}!`, "success");
 
-      // ✅ Role-based redirect
+      //  Role-based redirect
       setTimeout(() => {
         if (role === "employee") {
           console.log("🚀 Redirecting to: /employee-portal");
