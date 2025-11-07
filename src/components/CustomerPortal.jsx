@@ -159,7 +159,7 @@ export default function CustomerPortal({ user }) {
     "Bidvest Bank Limited",
     "Capitec Bank Limited",
     "Discovery Bank Limited",
-    "First National Bank (FNB)",
+    "First National Bank ",
     "FirstRand Bank",
     "Grindrod Bank Limited",
     "Investec Bank Limited",

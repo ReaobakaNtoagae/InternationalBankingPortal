@@ -35,10 +35,24 @@ router.post(
   authMiddleware,
   paymentLimiter,
   [
-    body("amount").isNumeric().withMessage("Amount must be a number"),
-    body("currency").notEmpty().withMessage("Currency is required"),
-    body("provider").notEmpty().withMessage("Provider is required"),
-    body("accountNumber").notEmpty().withMessage("Account number is required"),
+    body("amount")
+      .isNumeric().withMessage("Amount must be a number")
+      .matches(/^\d+(\.\d{1,2})?$/).withMessage("Invalid amount format"),
+    body("currency")
+      .notEmpty().withMessage("Currency is required")
+      .matches(/^[A-Z]{3}$/).withMessage("Currency must be a valid 3-letter ISO code"),
+    body("provider")
+      .notEmpty().withMessage("Provider is required")
+      .matches(/^[a-zA-Z0-9\s\.,'-]{2,50}$/).withMessage("Invalid provider name"),
+    body("accountNumber")
+      .notEmpty().withMessage("Account number is required")
+      .matches(/^[0-9]{6,20}$/).withMessage("Invalid account number format"),
+    body("beneficiaryName")
+      .optional()
+      .matches(/^[a-zA-Z\s\.'-]{2,100}$/).withMessage("Invalid beneficiary name"),
+    body("reference")
+      .optional()
+      .matches(/^[a-zA-Z0-9\s\.,#\-]{0,100}$/).withMessage("Invalid reference format"),
   ],
   async (req, res) => {
     try {
@@ -79,10 +93,27 @@ router.post(
   "/transfer",
   authMiddleware,
   [
-    body("amount").isNumeric().withMessage("Amount must be a number"),
-    body("bankName").notEmpty().withMessage("Bank name is required"),
-    body("swiftCode").notEmpty().withMessage("SWIFT code is required"),
-    body("accountNumber").notEmpty().withMessage("Account number is required"),
+    body("amount")
+      .isNumeric().withMessage("Amount must be a number")
+      .matches(/^\d+(\.\d{1,2})?$/).withMessage("Invalid amount format"),
+    body("bankName")
+      .notEmpty().withMessage("Bank name is required")
+      .matches(/^[a-zA-Z\s\.,'-]{2,100}$/).withMessage("Invalid bank name"),
+    body("swiftCode")
+      .notEmpty().withMessage("SWIFT code is required")
+      .matches(/^[A-Z0-9]{8,11}$/).withMessage("Invalid SWIFT code format"),
+    body("accountNumber")
+      .notEmpty().withMessage("Account number is required")
+      .matches(/^[0-9]{6,20}$/).withMessage("Invalid account number"),
+    body("currency")
+      .optional()
+      .matches(/^[A-Z]{3}$/).withMessage("Currency must be a valid 3-letter ISO code"),
+    body("beneficiaryName")
+      .optional()
+      .matches(/^[a-zA-Z\s\.'-]{2,100}$/).withMessage("Invalid beneficiary name"),
+    body("reference")
+      .optional()
+      .matches(/^[a-zA-Z0-9\s\.,#\-]{0,100}$/).withMessage("Invalid reference format"),
   ],
   async (req, res) => {
     try {
@@ -259,7 +290,7 @@ router.patch("/status/:id", authMiddleware, async (req, res) => {
     }
 
     const { status } = req.body;
-    if (!status || typeof status !== "string") {
+    if (!status || typeof status !== "string" || !/^[a-zA-Z\s_-]{3,20}$/.test(status)) {
       console.log("[Status Update] Invalid status:", status);
       return res.status(400).json({ error: "Valid status is required" });
     }
