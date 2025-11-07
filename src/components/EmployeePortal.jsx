@@ -132,7 +132,7 @@ export default function Employee({ user }) {
     }, 1500);
   };
 
-  // Submit verified payment to backend (SWIFT submit)
+
   const handleSwiftSubmit = (payment) => {
     fetch(`http://localhost:5000/api/payments/status/${payment._id}`, {
       method: "PATCH",
