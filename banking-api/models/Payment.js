@@ -2,14 +2,14 @@ const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
   {
-    // 🔹 The user who made the payment or transfer
+    
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-    // 🔹 Core financial fields
+    
     amount: { type: Number, required: true },
     currency: { type: String, required: true },
 
-    // 🔹 For payment initialization (step 1)
+    
     provider: { type: String },
     accountNumber: { type: String, required: true },
 

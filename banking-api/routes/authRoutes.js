@@ -10,16 +10,14 @@ dotenv.config();
 
 const router = express.Router();
 
-// 🔐 Token generator
+//Token generator
 const generateToken = (_id) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET is not defined.");
   return jwt.sign({ _id }, secret, { expiresIn: "1d" });
 };
 
-// ============================
-// 🔐 LOGIN
-// ============================
+
 router.post("/login", async (req, res) => {
   let { accountNumber, password, fullName } = req.body;
 
@@ -76,9 +74,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ============================
-// 👤 GET CURRENT USER
-// ============================
+
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id;

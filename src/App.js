@@ -19,7 +19,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // ✅ Fix: prevent printing "null" as a token
+    
     if (!token || token === "null" || token === "undefined") {
       console.warn("⚠️ No valid token found. User not authenticated.");
       setLoading(false);

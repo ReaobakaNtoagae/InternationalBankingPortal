@@ -47,6 +47,7 @@ const seedUsers = async () => {
         email: "lwazi@bank.com",
         role: "employee",
       },
+      
       {
         fullName: "Zinhle Mokoena",
         idNumber: "9107295809085",
@@ -63,7 +64,7 @@ const seedUsers = async () => {
         email: "thulani@bank.com",
         role: "employee",
       },
-      
+
       {
         fullName: "Sibusiso Dlamini",
         idNumber: "9007215482093",

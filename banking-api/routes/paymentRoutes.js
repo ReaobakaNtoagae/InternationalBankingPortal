@@ -7,7 +7,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ Rate limiter for payment creation
+// Rate limiter for payment creation
 const paymentLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -29,7 +29,7 @@ const SWIFT_CODES = {
   "Standard Bank of South Africa": "SBZAZAJJ",
 };
 
-// ✅ Create Payment
+// Create Payment
 router.post(
   "/",
   authMiddleware,
@@ -88,7 +88,7 @@ router.post(
   }
 );
 
-// ✅ Create Transfer
+// Create Transfer
 router.post(
   "/transfer",
   authMiddleware,
@@ -166,7 +166,7 @@ router.post(
   }
 );
 
-// ✅ Customer Transaction History
+// Customer Transaction History
 router.get("/history", authMiddleware, async (req, res) => {
   try {
     console.log("[History] Fetching transactions for user:", req.user.id);
@@ -185,7 +185,7 @@ router.get("/history", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Submitted Payments (Admin)
+// Submitted Payments (Admin)
 router.get("/submitted", authMiddleware, async (req, res) => {
   try {
     console.log("[Submitted] Fetching submitted payments");
@@ -201,7 +201,7 @@ router.get("/submitted", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Approve Payment (Admin)
+// Approve Payment (Admin)
 router.put("/approve/:id", authMiddleware, async (req, res) => {
   try {
     console.log("[Approve] Payment ID:", req.params.id);
@@ -226,7 +226,7 @@ router.put("/approve/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Pending Payments (Admin)
+// Pending Payments (Admin)
 router.post("/pending", authMiddleware, async (req, res) => {
   try {
     console.log("[Pending] Fetching pending payments");
@@ -242,7 +242,7 @@ router.post("/pending", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Reject Payment
+// Reject Payment
 router.patch("/reject/:id", authMiddleware, async (req, res) => {
   try {
     console.log("[Reject] Payment ID:", req.params.id);
@@ -267,7 +267,7 @@ router.patch("/reject/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Rejected Payments
+// Rejected Payments
 router.get("/rejected", authMiddleware, async (req, res) => {
   try {
     console.log("[Rejected] Fetching all rejected payments");
@@ -280,7 +280,7 @@ router.get("/rejected", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Update Payment Status
+// Update Payment Status
 router.patch("/status/:id", authMiddleware, async (req, res) => {
   try {
     console.log("[Status Update] Payment ID:", req.params.id, "Body:", req.body);
@@ -311,28 +311,6 @@ router.patch("/status/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Delete Transaction
-router.delete("/delete/:id", authMiddleware, async (req, res) => {
-  try {
-    console.log("[Delete] Payment ID:", req.params.id);
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      console.log("[Delete] Invalid payment ID");
-      return res.status(400).json({ error: "Invalid payment ID" });
-    }
 
-    const payment = await Payment.findById(req.params.id);
-    if (!payment) {
-      console.log("[Delete] Payment not found");
-      return res.status(404).json({ error: "Payment not found" });
-    }
-
-    await payment.deleteOne();
-    console.log("[Delete] Payment deleted:", req.params.id);
-    res.json({ message: "Payment deleted successfully." });
-  } catch (error) {
-    console.error("[Delete Error]:", error);
-    res.status(500).json({ error: "Failed to delete payment" });
-  }
-});
 
 export default router;
