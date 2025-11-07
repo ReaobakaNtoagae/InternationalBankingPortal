@@ -9,11 +9,11 @@ const seedUsers = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    // 🗑 Delete all existing employees
+
     await User.deleteMany({ role: "employee" });
     console.log("🧹 Old employees removed");
 
-    // 🧠 Fresh new employees
+    
     const newEmployees = [
       {
         fullName: "Nomvula Khumalo",
@@ -63,6 +63,7 @@ const seedUsers = async () => {
         email: "thulani@bank.com",
         role: "employee",
       },
+      
       {
         fullName: "Sibusiso Dlamini",
         idNumber: "9007215482093",
@@ -71,6 +72,7 @@ const seedUsers = async () => {
         email: "sibusiso.dlamini@example.com",
         role: "customer",
       },
+
       {
         fullName: "Anele Mokoena",
         idNumber: "9702147856031",
@@ -79,6 +81,7 @@ const seedUsers = async () => {
         email: "anele.mokoena@example.com",
         role: "customer",
       },
+
       {
         fullName: "Boitumelo Molefe",
         idNumber: "8809103746025",

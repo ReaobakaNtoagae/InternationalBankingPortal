@@ -54,9 +54,10 @@ export default function Login({ setUser }) {
         return;
       }
 
-      // ✅ Save token before redirect
+      // ✅ Save token and user to localStorage
       localStorage.setItem("token", data.token);
-      console.log("🔐 Token saved to localStorage");
+      localStorage.setItem("user", JSON.stringify(data.user));
+      console.log("🔐 Token and user saved to localStorage");
 
       const role = data.user.role;
       const userId = data.user.id;

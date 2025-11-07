@@ -10,6 +10,7 @@ export default function CustomerPortal({ user }) {
   const [toast, setToast] = useState(null);
   const [step, setStep] = useState(1);
   const [paymentId, setPaymentId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [paymentData, setPaymentData] = useState({
     amount: "",
@@ -30,7 +31,7 @@ export default function CustomerPortal({ user }) {
     setToast({ message, type });
   };
 
-  // ✅ Redirect if user is missing or role is wrong
+  // ✅ Redirect if user missing or wrong role
   useEffect(() => {
     if (!user || user.role !== "customer") {
       showToast("Access denied. Redirecting...", "error");
@@ -48,6 +49,9 @@ export default function CustomerPortal({ user }) {
     setBeneficiaryData({ ...beneficiaryData, [e.target.name]: e.target.value });
   };
 
+  // ==========================
+  // ✅ Step 1: Payment Submit
+  // ==========================
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
     const { amount, currency, provider } = paymentData;
@@ -89,12 +93,18 @@ export default function CustomerPortal({ user }) {
     }
   };
 
+  // ==========================
+  // ✅ Step 2: Beneficiary Submit
+  // ==========================
   const handleBeneficiarySubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     const { beneficiaryName, accountNumber, bankName, swiftCode, reference } = beneficiaryData;
 
     if (!beneficiaryName || !accountNumber || !bankName || !swiftCode) {
       showToast("Please fill in all required beneficiary fields.", "error");
+      setLoading(false);
       return;
     }
 
@@ -123,14 +133,17 @@ export default function CustomerPortal({ user }) {
 
       if (!response.ok) {
         showToast(data.error || "Transfer failed", "error");
+        setLoading(false);
         return;
       }
 
-      showToast("Transfer completed successfully!", "success");
-      setTimeout(() => navigate("/home"), 1500);
+      showToast("✅ Transfer completed successfully!", "success");
+      setTimeout(() => navigate("/transactions"), 1500);
     } catch (err) {
       console.error("❌ Transfer Error:", err);
       showToast("Server error. Please try again later.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,116 +152,144 @@ export default function CustomerPortal({ user }) {
     navigate("/login");
   };
 
-  return (
-    <div className={styles.container}>
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
+  // ✅ Predefined Bank List (matches your backend SWIFT map)
+  const bankOptions = [
+    "Absa Bank Limited",
+    "African Bank Limited",
+    "Bidvest Bank Limited",
+    "Capitec Bank Limited",
+    "Discovery Bank Limited",
+    "First National Bank (FNB)",
+    "FirstRand Bank",
+    "Grindrod Bank Limited",
+    "Investec Bank Limited",
+    "Mercantile Bank Limited",
+    "Nedbank Limited",
+    "Standard Bank of South Africa",
+  ];
 
-      <p>
-        Welcome, {user.fullName} | Account: {user.accountNumber}
-      </p>
+ return (
+  <div className={styles.container}>
+    {toast && (
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+    )}
 
-      {step === 1 && (
-        <>
-          <h2>Step 1: Payment Details</h2>
-          <form className={styles.form} onSubmit={handlePaymentSubmit}>
-            <input
-              type="number"
-              name="amount"
-              placeholder="Amount"
-              value={paymentData.amount}
-              onChange={handlePaymentChange}
-              required
-            />
-            <select
-              name="currency"
-              value={paymentData.currency}
-              onChange={handlePaymentChange}
-              required
-            >
-              <option value="">Select Currency</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
-              <option value="JPY">JPY</option>
-              <option value="CHF">CHF</option>
-              <option value="CAD">CAD</option>
-              <option value="AUD">AUD</option>
-              <option value="ZAR">ZAR</option>
-            </select>
-            <select
-              name="provider"
-              value={paymentData.provider}
-              onChange={handlePaymentChange}
-              required
-            >
-              <option value="">Select Provider</option>
-              <option value="PayPal">PayPal</option>
-              <option value="Wise">Wise</option>
-              <option value="Western Union">Western Union</option>
-              <option value="SWIFT">SWIFT</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-            </select>
-            <button type="submit" className={styles.button}>
-              Next: Beneficiary
-            </button>
-            <button type="button" onClick={handleLogout} className={styles.logout}>
-              Logout
-            </button>
-          </form>
-        </>
-      )}
+    <p>
+      Welcome, {user.fullName} | Account: {user.accountNumber}
+    </p>
 
-      {step === 2 && (
-        <>
-          <h2>Step 2: Beneficiary Details</h2>
-          <form className={styles.form} onSubmit={handleBeneficiarySubmit}>
-            <input
-              type="text"
-              name="beneficiaryName"
-              placeholder="Beneficiary Name"
-              value={beneficiaryData.beneficiaryName}
-              onChange={handleBeneficiaryChange}
-              required
-            />
-            <input
-              type="text"
-              name="accountNumber"
-              placeholder="Beneficiary Account Number"
-              value={beneficiaryData.accountNumber}
-              onChange={handleBeneficiaryChange}
-              required
-            />
-            <input
-              type="text"
-              name="bankName"
-              placeholder="Bank Name"
-              value={beneficiaryData.bankName}
-              onChange={handleBeneficiaryChange}
-              required
-            />
-            <input
-              type="text"
-              name="swiftCode"
-              placeholder="SWIFT Code"
-              value={beneficiaryData.swiftCode}
-              onChange={handleBeneficiaryChange}
-              required
-            />
-            <input
-              type="text"
-              name="reference"
-              placeholder="Reference (optional)"
-              value={beneficiaryData.reference}
-              onChange={handleBeneficiaryChange}
-            />
-            <button type="submit" className={styles.button}>
-              Submit Transfer
-            </button>
-          </form>
-        </>
-      )}
-    </div>
-  );
+    {step === 1 && (
+      <>
+        <h2>Step 1: Payment Details</h2>
+        <form className={styles.form} onSubmit={handlePaymentSubmit}>
+          <input
+            type="number"
+            name="amount"
+            placeholder="Amount"
+            value={paymentData.amount}
+            onChange={handlePaymentChange}
+            required
+          />
+          <select
+            name="currency"
+            value={paymentData.currency}
+            onChange={handlePaymentChange}
+            required
+          >
+            <option value="">Select Currency</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="JPY">JPY</option>
+            <option value="CHF">CHF</option>
+            <option value="CAD">CAD</option>
+            <option value="AUD">AUD</option>
+            <option value="ZAR">ZAR</option>
+          </select>
+          <select
+            name="provider"
+            value={paymentData.provider}
+            onChange={handlePaymentChange}
+            required
+          >
+            <option value="">Select Provider</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Wise">Wise</option>
+            <option value="Western Union">Western Union</option>
+            <option value="SWIFT">SWIFT</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </select>
+          <button type="submit" className={styles.button}>
+            Next: Beneficiary
+          </button>
+          <button type="button" onClick={handleLogout} className={styles.logout}>
+            Logout
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/transactions")}
+            className={styles.secondaryButton}
+          >
+            View Transactions
+          </button>
+        </form>
+      </>
+    )}
+
+    {step === 2 && (
+      <>
+        <h2>Step 2: Beneficiary Details</h2>
+        <form className={styles.form} onSubmit={handleBeneficiarySubmit}>
+          <input
+            type="text"
+            name="beneficiaryName"
+            placeholder="Beneficiary Name"
+            value={beneficiaryData.beneficiaryName}
+            onChange={handleBeneficiaryChange}
+            required
+          />
+          <input
+            type="text"
+            name="accountNumber"
+            placeholder="Beneficiary Account Number"
+            value={beneficiaryData.accountNumber}
+            onChange={handleBeneficiaryChange}
+            required
+          />
+          <select
+            name="bankName"
+            value={beneficiaryData.bankName}
+            onChange={handleBeneficiaryChange}
+            required
+          >
+            <option value="">Select Bank</option>
+            {bankOptions.map((bank) => (
+              <option key={bank} value={bank}>
+                {bank}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            name="swiftCode"
+            placeholder="SWIFT Code"
+            value={beneficiaryData.swiftCode}
+            onChange={handleBeneficiaryChange}
+            required
+          />
+          <input
+            type="text"
+            name="reference"
+            placeholder="Reference (optional)"
+            value={beneficiaryData.reference}
+            onChange={handleBeneficiaryChange}
+          />
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Processing..." : "Submit Transfer"}
+          </button>
+        </form>
+      </>
+    )}
+  </div>
+);
 }

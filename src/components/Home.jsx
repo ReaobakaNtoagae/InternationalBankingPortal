@@ -1,118 +1,119 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Toast from "./Toast";
 import styles from "./Home.module.css";
 
-export default function Home() {
+export default function Home({ user }) {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("loggedInUser"));
   const token = localStorage.getItem("token");
+
+  const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState([]);
-  const [stats, setStats] = useState({ totalSent: 0, totalReceived: 0, balance: 0 });
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
 
   useEffect(() => {
-    if (!user?._id) {
+    if (!token) {
       navigate("/login");
       return;
     }
 
+    if (!user) return; // Wait for user to load
+
     const fetchPayments = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/payments/${user.accountNumber}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await fetch("http://localhost:5000/api/payments/history", {
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         const data = await res.json();
 
         if (!res.ok) {
-          console.error("Fetch payments error:", data.error);
+          showToast(data.error || "Failed to fetch payment history", "error");
           return;
         }
 
-        setPayments(data);
-
-        let sent = 0,
-          received = 0;
-        data.forEach((p) => (p.type === "transfer" ? (sent += p.amount) : (received += p.amount)));
-        setStats({ totalSent: sent, totalReceived: received, balance: received - sent });
-      } catch (err) {
-        console.error("Fetch payments error:", err);
+        setPayments(data.payments || []);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+        showToast("Server error. Try again later.", "error");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPayments();
-  }, [user, token, navigate]);
+  }, [user, navigate, token]);
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning ☀️";
-    if (h < 18) return "Good afternoon 🌤️";
-    return "Good evening 🌙";
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
+  const handleNewPayment = () => navigate("/customer-portal");
+
+  if (!user) return null;
+
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.profile}>
-          <img
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullName || "Guest"}`}
-            alt="avatar"
-          />
-          <div>
-            <h1>{greeting()}</h1>
-            <p>{user?.fullName || "Guest"}</p>
-          </div>
-        </div>
-        <div className={styles.balanceBox}>
-          <span>Current Balance</span>
-          <h2>${stats.balance.toLocaleString()}</h2>
-        </div>
-      </header>
+    <div className={styles.container}>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
-      <section className={styles.stats}>
-        <div className={`${styles.statCard} ${styles.sent}`}>
-          <h3>Total Sent</h3>
-          <p>-${stats.totalSent.toLocaleString()}</p>
-        </div>
-        <div className={`${styles.statCard} ${styles.received}`}>
-          <h3>Total Received</h3>
-          <p>+${stats.totalReceived.toLocaleString()}</p>
-        </div>
-        <div className={`${styles.statCard} ${styles.neutral}`}>
-          <h3>Transactions</h3>
-          <p>{payments.length}</p>
-        </div>
-      </section>
+      <h2>Welcome back, {user.fullName}</h2>
+      <p>
+        Account Number: <strong>{user.accountNumber}</strong>
+      </p>
 
-      <section className={styles.transactions}>
-        <h2>Recent Transactions</h2>
-        {payments.length === 0 ? (
-          <p className={styles.empty}>No transactions yet 🚀</p>
-        ) : (
-          <ul className={styles.list}>
-            {payments.map((p, i) => (
-              <li key={p._id} className={styles.transaction} style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className={styles.left}>
-                  <div className={`${styles.icon} ${p.type === "transfer" ? styles.iconSent : styles.iconReceived}`}>
-                    {p.type === "transfer" ? "📤" : "📥"}
-                  </div>
-                  <div>
-                    <h4>{p.type === "transfer" ? "Transfer Sent" : "Payment Received"}</h4>
-                    <p>{p.type === "transfer" ? `To: ${p.beneficiaryName}` : `From: ${p.senderName || "Unknown"}`}</p>
-                  </div>
-                </div>
-                <div className={styles.right}>
-                  <span className={p.type === "transfer" ? styles.amountSent : styles.amountReceived}>
-                    {p.type === "transfer" ? "-" : "+"}${p.amount.toLocaleString()}
-                  </span>
-                  <small>{new Date(p.createdAt).toLocaleDateString()}</small>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className={styles.actions}>
+        <button onClick={handleNewPayment} className={styles.button}>
+          New Payment / Transfer
+        </button>
+
+        <button onClick={handleLogout} className={styles.logout}>
+          Logout
+        </button>
+      </div>
+
+      <h3>Payment History</h3>
+
+      {loading ? (
+        <p>Loading payment history...</p>
+      ) : payments.length === 0 ? (
+        <p>No payments yet. Make your first transfer!</p>
+      ) : (
+        <div className={styles.historyBox}>
+          {payments.map((p) => (
+            <div key={p._id} className={styles.paymentCard}>
+              <p>
+                <strong>Amount:</strong> {p.amount} {p.currency}
+              </p>
+              <p>
+                <strong>Provider:</strong> {p.provider}
+              </p>
+              <p>
+                <strong>Status:</strong> {p.status}
+              </p>
+              {p.beneficiaryName && (
+                <p>
+                  <strong>Beneficiary:</strong> {p.beneficiaryName}
+                </p>
+              )}
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(p.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

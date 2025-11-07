@@ -11,6 +11,8 @@ import Home from "./components/Home";
 import CustomerPortal from "./components/CustomerPortal";
 import BeneficiaryPayment from "./components/BeneficiaryPayment";
 import EmployeePortal from "./components/EmployeePortal";
+import Transactions from "./components/Transactions";
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -28,7 +30,7 @@ function App() {
 
     console.log("🔐 Token found in localStorage:", token);
 
-    // ✅ Fetch authenticated user details
+    
     fetch("http://localhost:5000/api/auth/me", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -60,7 +62,6 @@ function App() {
       });
   }, []);
 
-  // ✅ Prevent routes from rendering before auth state is known
   if (loading) {
     console.log("⏳ Waiting for user authentication...");
     return <div>Loading...</div>;
@@ -74,7 +75,7 @@ function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/transactions" element={<Transactions />} />
         <Route path="/beneficiary" element={<BeneficiaryPayment />} />
 
         {/* Protected: Customer Portal */}

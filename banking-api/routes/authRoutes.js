@@ -1,10 +1,12 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const xss = require("xss");
-const User = require("../models/User");
-require("dotenv").config();
-const authMiddleware = require("../middleware/authMiddleware");
+import express from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import xss from "xss";
+import dotenv from "dotenv";
+import User from "../models/User.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+
+dotenv.config();
 
 const router = express.Router();
 
@@ -37,7 +39,7 @@ router.post("/login", async (req, res) => {
 
     const user = await User.findOne({
       accountNumber: accountNumber,
-      fullName: { $regex: new RegExp(`^${fullName}$`, "i") }
+      fullName: { $regex: new RegExp(`^${fullName}$`, "i") },
     });
 
     if (!user) {
@@ -104,4 +106,4 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
